@@ -1,0 +1,6 @@
+// SPDX-Licens-Identifier: Unilicense
+pragma solidity ^0.8.0;
+
+contract Crowdsale {
+    string public name = "Crowdsale";
+}

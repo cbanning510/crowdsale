@@ -8,6 +8,7 @@ import Navigation from './Navigation';
 import Loading from './Loading';
 import Progress from './Progress';
 import Buy from './Buy';
+import Button from 'react-bootstrap/Button';
 
 // ABIs
 import TOKEN_ABI from '../abis/Token.json';
@@ -86,6 +87,9 @@ function App() {
             <strong>Current Price: </strong>
             {price} ETH
           </p>
+          <Button variant="success" type="submit">
+            Connect Wallet
+          </Button>
           <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading={setIsLoading} />
           <Progress maxTokens={maxTokens} tokensSold={tokensSold} />
         </>

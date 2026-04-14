@@ -8,7 +8,7 @@ import Navigation from './Navigation';
 import Loading from './Loading';
 import Progress from './Progress';
 import Buy from './Buy';
-import Button from 'react-bootstrap/Button';
+import WhitelistManager from './WhitelistManager';
 
 // ABIs
 import TOKEN_ABI from '../abis/Token.json';
@@ -16,6 +16,9 @@ import CROWDSALE_ABI from '../abis/Crowdsale.json';
 
 // config
 import config from '../config.json';
+
+console.log('CROWDSALE_ABI:', CROWDSALE_ABI);
+console.log('TOKEN_ABI:', TOKEN_ABI);
 
 function App() {
   const [account, setAccount] = useState(null);
@@ -28,6 +31,8 @@ function App() {
   const [price, setPrice] = useState(0);
   const [maxTokens, setMaxTokens] = useState(0);
   const [tokensSold, setTokensSold] = useState(0);
+
+  const [owner, setOwner] = useState(null);
 
   useEffect(() => {
     if (isLoading) {
@@ -53,6 +58,10 @@ function App() {
     const accounts = await window.ethereum.request({
       method: 'eth_requestAccounts',
     });
+
+    const owner = await crowdsale.owner();
+    setOwner(owner);
+
     const account = ethers.utils.getAddress(accounts[0]);
     setAccount(account);
 
@@ -87,9 +96,7 @@ function App() {
             <strong>Current Price: </strong>
             {price} ETH
           </p>
-          <Button variant="success" type="submit">
-            Connect Wallet
-          </Button>
+          {account && account.toLowerCase() === owner?.toLowerCase() && <WhitelistManager provider={provider} crowdsale={crowdsale} />}
           <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading={setIsLoading} />
           <Progress maxTokens={maxTokens} tokensSold={tokensSold} />
         </>

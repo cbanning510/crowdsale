@@ -1,7 +1,7 @@
 // SPDX-Licens-Identifier: Unilicense
 pragma solidity ^0.8.0;
 
-import "./Token.sol";
+import './Token.sol';
 
 contract Crowdsale {
     address public owner;
@@ -9,6 +9,7 @@ contract Crowdsale {
     uint256 public price;
     uint256 public maxTokens;
     uint256 public tokensSold;
+    mapping(address => bool) public whitelist;
 
     event Buy(uint256 amount, address buyer);
     event Finalize(uint256 tokensSold, uint256 ethRaised);
@@ -20,8 +21,13 @@ contract Crowdsale {
         maxTokens = _maxTokens;
     }
 
-        modifier onlyOwner() {
+    modifier onlyOwner() {
         require(msg.sender == owner, 'caller is not the owner');
+        _;
+    }
+
+    modifier onlyWhitelisted() {
+        require(whitelist[msg.sender], 'Not whitelisted');
         _;
     }
 
@@ -30,8 +36,17 @@ contract Crowdsale {
         buyTokens(amount * 1e18);
     }
 
-    function buyTokens(uint256 _amount) public payable {
-        require(msg.value == (_amount /1e18) * price);
+    function addToWhitelist(address _address) public onlyOwner {
+        console.log('address', _address);
+        whitelist[_address] = true;
+    }
+
+    function removeFromWhitelist(address _address) public onlyOwner {
+        whitelist[_address] = false;
+    }
+
+    function buyTokens(uint256 _amount) public payable onlyWhitelisted {
+        require(msg.value == (_amount / 1e18) * price);
         require(token.balanceOf(address(this)) >= _amount);
         require(token.transfer(msg.sender, _amount));
 
@@ -44,11 +59,11 @@ contract Crowdsale {
         price = _price;
     }
 
-    function finalize() public onlyOwner{
+    function finalize() public onlyOwner {
         require(token.transfer(owner, token.balanceOf(address(this))));
 
         uint256 value = address(this).balance;
-        (bool sent,) = owner.call{value: value}("");
+        (bool sent, ) = owner.call{value: value}('');
         require(sent);
 
         emit Finalize(tokensSold, value);

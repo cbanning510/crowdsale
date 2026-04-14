@@ -17,9 +17,6 @@ import CROWDSALE_ABI from '../abis/Crowdsale.json';
 // config
 import config from '../config.json';
 
-console.log('CROWDSALE_ABI:', CROWDSALE_ABI);
-console.log('TOKEN_ABI:', TOKEN_ABI);
-
 function App() {
   const [account, setAccount] = useState(null);
   const [accountBalance, setAccountBalance] = useState(0);
@@ -33,6 +30,10 @@ function App() {
   const [tokensSold, setTokensSold] = useState(0);
 
   const [owner, setOwner] = useState(null);
+  const [isOpen, setIsOpen] = useState(null);
+
+  const [minContribution, setMinContribution] = useState(null);
+  const [maxContribution, setMaxContribution] = useState(null);
 
   useEffect(() => {
     if (isLoading) {
@@ -53,6 +54,9 @@ function App() {
     const token = new ethers.Contract(config[chainId].token.address, TOKEN_ABI, provider);
     const crowdsale = new ethers.Contract(config[chainId].crowdsale.address, CROWDSALE_ABI, provider);
     setCrowdsale(crowdsale);
+    setIsOpen(await crowdsale.isOpen());
+    setMinContribution(await crowdsale.minContribution());
+    setMaxContribution(await crowdsale.maxContribution());
 
     // Fetch Account
     const accounts = await window.ethereum.request({
@@ -84,6 +88,8 @@ function App() {
     setIsLoading(false);
   };
 
+  console.log('isOpen', isOpen);
+
   return (
     <Container>
       <Navigation />
@@ -97,7 +103,7 @@ function App() {
             {price} ETH
           </p>
           {account && account.toLowerCase() === owner?.toLowerCase() && <WhitelistManager provider={provider} crowdsale={crowdsale} />}
-          <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading={setIsLoading} />
+          {isOpen && <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading={setIsLoading} minContribution={minContribution} maxContribution={maxContribution} />}
           <Progress maxTokens={maxTokens} tokensSold={tokensSold} />
         </>
       )}

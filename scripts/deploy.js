@@ -11,6 +11,10 @@ async function main() {
   const SYMBOL = 'CHRISU';
   const MAX_SUPPLY = '1000000';
   const PRICE = hre.ethers.utils.parseUnits('0.025', 'ether');
+  const OPENING_DATE = Math.floor(new Date('2026-04-10T10:00:00').getTime() / 1000);
+  const CLOSING_DATE = Math.floor(new Date('2026-04-15T10:00:00').getTime() / 1000);
+  const MIN_CONTRIBUTION = hre.ethers.utils.parseUnits('10', 'ether'); // 10 tokens
+  const MAX_CONTRIBUTION = hre.ethers.utils.parseUnits('1000', 'ether'); // 1000 tokens
 
   // Deploy token
   const Token = await hre.ethers.getContractFactory('Token');
@@ -21,23 +25,14 @@ async function main() {
 
   // Deploy Crowdsale
   const Crowdsale = await hre.ethers.getContractFactory('Crowdsale');
-  const crowdsale = await Crowdsale.deploy(
-    (
-      await token
-    ).address,
-    PRICE,
-    hre.ethers.utils.parseUnits(MAX_SUPPLY, 'ether')
-  );
+  const crowdsale = await Crowdsale.deploy((await token).address, PRICE, hre.ethers.utils.parseUnits(MAX_SUPPLY, 'ether'), OPENING_DATE, CLOSING_DATE, MIN_CONTRIBUTION, MAX_CONTRIBUTION);
   await crowdsale.deployed();
 
   console.log(`Crowdsale deployed to: ${crowdsale.address}\n`);
 
   // Send tokens to Crowdsale:
 
-  const transaction = await token.transfer(
-    crowdsale.address,
-    hre.ethers.utils.parseUnits(MAX_SUPPLY, 'ether')
-  );
+  const transaction = await token.transfer(crowdsale.address, hre.ethers.utils.parseUnits(MAX_SUPPLY, 'ether'));
   await transaction.wait();
 
   console.log(`Tokens transferred to Crowdsale\n`);
